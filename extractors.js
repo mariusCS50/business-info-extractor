@@ -114,7 +114,7 @@ export async function getPhones(page, url) {
             await page.goto(link.href, { waitUntil: "networkidle2", timeout: 30000 });
             await extractPhones();
         } catch (err) {
-            console.warn(`Could not load contact page: ${link.href}`);
+            logger.warn(`Could not load contact page: ${link.href}`);
         }
     }
 
@@ -122,9 +122,51 @@ export async function getPhones(page, url) {
 }
 
 export async function getCompanyName(page, url) {
-    // TODO: detect SRL, SC patterns, maybe from title or footer
+    const companies = new Set();
+
+    async function extractCompany() {
+        const text = await page.evaluate(() => document.body.innerText);
+
+        // Catch company names ending with SRL or SA
+        const matches = text.match(
+            /\b(?:[A-ZĂÂÎȘȚ][A-Za-zĂÂÎȘȚăâîșț0-9&.,\-]{1,40}\s+){0,5}(?:SRL|SA)\b/g
+        ) || [];
+
+        matches.forEach((raw) => {
+            let normalized = raw.trim();
+
+            // Collapse multiple spaces
+            normalized = normalized.replace(/\s{2,}/g, " ");
+
+            companies.add(normalized);
+        });
+    }
+
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-    return [];
+    await extractCompany();
+
+    // follow "contact", "despre noi", "termeni si conditii"
+    const links = await page.$$eval("a", (anchors) =>
+        anchors.map((a) => ({
+            href: a.href,
+            text: (a.innerText || "").trim().toLowerCase(),
+        }))
+    );
+
+    const companyLinks = links.filter((l) =>
+        /(contact|despre\s*noi|termeni|condi[tț]ii)/i.test(l.text)
+    );
+
+    for (const link of companyLinks) {
+        try {
+            await page.goto(link.href, { waitUntil: "domcontentloaded", timeout: 30000 });
+            await extractCompany();
+        } catch (err) {
+            logger.warn(`Could not load company page: ${link.href}`);
+        }
+    }
+
+    return Array.from(companies);
 }
 
 export async function getCUI(page, url) {
