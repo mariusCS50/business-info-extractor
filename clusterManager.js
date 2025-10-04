@@ -13,12 +13,11 @@ export async function getCluster() {
             maxConcurrency: 3,
             puppeteerOptions: {
                 headless: false,
-				slowMo:50,
                 args: ["--no-sandbox", "--disable-setuid-sandbox"],
             },
             timeout: 60 * 1000,
-            retryLimit: 2,
-            retryDelay: 1000,
+            // retryLimit: 2,
+            // retryDelay: 1000,
         });
 
         clusterInstance = await clusterPromise;
