@@ -13,15 +13,9 @@ export async function getCluster() {
             maxConcurrency: 3,
             puppeteerOptions: {
                 headless: true,
-               args: [
-				"--no-sandbox",
-				"--disable-setuid-sandbox",
-				"--disable-dev-shm-usage",
-				"--disable-gpu",
-				"--single-process"
-				],
+                args: ["--no-sandbox", "--disable-setuid-sandbox"],
             },
-            timeout: 60 * 1000,
+            timeout: 120 * 1000,
             // retryLimit: 2,
             // retryDelay: 1000,
         });

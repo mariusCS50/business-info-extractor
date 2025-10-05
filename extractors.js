@@ -8,7 +8,7 @@ export async function crawlPages(page, url) {
 	const companies = new Set();
 	const cuis = new Set();
 
-	await page.goto(url, { waitUntil: "networkidle2", timeout: 90000 });
+	await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 	const text = await page.evaluate(() => document.body.innerText);
 
 	await getEmails(emails, text);
@@ -25,7 +25,7 @@ export async function crawlPages(page, url) {
 
 	for (const link of contactLinks) {
 		try {
-			await page.goto(link.href, { waitUntil: "networkidle2", timeout: 90000 });
+			await page.goto(link.href, { waitUntil: "networkidle2", timeout: 60000 });
 			const text = await page.evaluate(() => document.body.innerText);
 
 			await getEmails(emails, text);
@@ -41,7 +41,7 @@ export async function crawlPages(page, url) {
 
 	for (const link of legalLinks) {
 		try {
-			await page.goto(link.href, { waitUntil: "networkidle2", timeout: 90000 });
+			await page.goto(link.href, { waitUntil: "networkidle2", timeout: 60000 });
 			const text = await page.evaluate(() => (document.body.textContent || '').replace(/\s+/g, ' '));
 
 			await getCompanyName(companies, text);
