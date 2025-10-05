@@ -11,6 +11,17 @@ const logger = new Logger("Server");
 const app = express();
 const PORT = process.env.PORT;
 
+const blacklist = [
+    "onrc.ro", "gov.ro", "anaf.ro", "facebook.com", "instagram.com", "linkedin.com",
+    "douglas.ro", "marionnaud.ro", "yves-rocher.ro", "sabon.ro", "sephora.ro",
+    "pupamilano.ro", "maccosmetics.ro", "xpertbeauty.ro", "notino.ro", "makeup.ro",
+    "elefant.ro", "emag.ro", "aboutyou.ro", "avon.ro", "farmec.ro", "gerovital.ro"
+];
+
+function isBlacklisted(url) {
+    return blacklist.some(domain => url.toLowerCase().includes(domain));
+}
+
 app.get("/", (req, res) => {
     res.send("Hello World");
 });
@@ -33,6 +44,14 @@ app.get("/search", async (req, res) => {
         const organic = results?.results?.[0]?.content?.results?.results?.organic || [];
 
         const urls = organic.map((item) => item.url);
+
+		urls.filter((url) => {
+            if (isBlacklisted(url)) {
+                logger.info(`Skipping blacklisted: ${url}`);
+                return false;
+            }
+            return true;
+        });
 
         if (urls.length === 0) {
             return res.status(204).json({

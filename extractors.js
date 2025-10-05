@@ -13,8 +13,6 @@ export async function crawlPages(page, url) {
 
 	await getEmails(emails, text);
 	await getPhones(phones, text);
-	await getCompanyName(companies, text);
-	await getCUI(cuis, text);
 
 	const links = await page.$$eval("a", (anchors) =>
 		anchors.map((a) => ({
@@ -44,7 +42,7 @@ export async function crawlPages(page, url) {
 	for (const link of legalLinks) {
 		try {
 			await page.goto(link.href, { waitUntil: "networkidle2", timeout: 30000 });
-			const text = await page.evaluate(() => document.body.innerText);
+			const text = await page.evaluate(() => (document.body.textContent || '').replace(/\s+/g, ' '));
 
 			await getCompanyName(companies, text);
 			await getCUI(cuis, text);
@@ -110,11 +108,13 @@ async function getCompanyName(companies, text) {
 async function getCUI(cuis, text) {
 	const matches =
 		text.match(
-			/\b(?:RO\s*[-–—.:/\\]?\s*\d{6,10}|(?:cod\s+unic\s+de\s+[iî]nregistrare|c[\s.\-]*u[\s.\-]*i)\s*[:\-]?\s*\d{6,10})\b/gi
+			/\b(?:RO\s*[-–—.:/\\]?\s*\d{6,10}|cod\s+unic(?:\s+\w+){0,4}?\s*[:\-]?\s*(?:RO\s*)?\d{6,10})\b/gi
 		) || [];
 
 	matches.forEach((raw) => {
 		const digits = raw.replace(/[^0-9]/g, "");
-		cuis.add(`RO${digits}`);
+		if (digits.length >= 6 && digits.length <= 10) {
+			cuis.add(`RO${digits}`);
+		}
 	});
 }
