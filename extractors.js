@@ -78,15 +78,14 @@ async function getEmails(emails, text) {
 }
 
 async function getPhones(phones, text) {
-	const matches = text.match(/(\+40|0)[\s.\-]?[237](?:[\s.\-]?\d){8}/g) || [];
+	const matches =
+		text.match(/(?:\b|\s)(\+40|0)[\s.\-]?[237](?:[\s.\-]?\d){8}(?!\d)/g) || [];
 
 	matches.forEach((raw) => {
 		let normalized = raw.replace(/[^\d+]/g, "");
-
 		if (normalized.startsWith("0") && normalized.length === 10) {
 			normalized = "+4" + normalized;
 		}
-
 		if (normalized.startsWith("+40") && normalized.length === 12) {
 			phones.add(normalized);
 		}
