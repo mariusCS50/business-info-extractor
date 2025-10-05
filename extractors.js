@@ -51,7 +51,7 @@ export async function getEmails(page, url) {
     );
 
     const contactLinks = links.filter((l) =>
-        /(contact|despre\s*noi)/i.test(l.text)
+        /(contact|despre)/i.test(l.text)
     );
 
     for (const link of contactLinks) {
@@ -106,7 +106,7 @@ export async function getPhones(page, url) {
     );
 
     const contactLinks = links.filter((l) =>
-        /(contact|despre\s*noi)/i.test(l.text)
+        /(contact|despre)/i.test(l.text)
     );
 
     for (const link of contactLinks) {
@@ -154,7 +154,7 @@ export async function getCompanyName(page, url) {
     );
 
     const companyLinks = links.filter((l) =>
-        /(contact|despre\s*noi|termeni|condi[tț]ii)/i.test(l.text)
+        /(contact|despre|termeni|condi[tț]ii)/i.test(l.text)
     );
 
     for (const link of companyLinks) {
@@ -170,7 +170,48 @@ export async function getCompanyName(page, url) {
 }
 
 export async function getCUI(page, url) {
-    // TODO: detect RO + 6-10 digits
+    const cuis = new Set();
+
+    async function extractCUI() {
+        const text = await page.evaluate(() => document.body.innerText);
+
+        // Match "RO" followed by 6–10 digits with optional separators/spaces
+        const matches =
+			text.match(
+				/\b(?:RO\s*[-–—.:/\\]?\s*\d{6,10}|(?:cod\s+unic\s+de\s+[iî]nregistrare|c[\s.\-]*u[\s.\-]*i)\s*[:\-]?\s*\d{6,10})\b/gi
+			) || [];
+
+
+        matches.forEach((raw) => {
+            // Keep only digits after RO and normalize to "RO########"
+            const digits = raw.replace(/[^0-9]/g, "");
+            cuis.add(`RO${digits}`);
+        });
+    }
+
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-    return [];
+    await extractCUI();
+
+    // Follow pages likely to contain company identifiers
+    const links = await page.$$eval("a", (anchors) =>
+        anchors.map((a) => ({
+            href: a.href,
+            text: (a.innerText || "").trim().toLowerCase(),
+        }))
+    );
+
+    const detailLinks = links.filter((l) =>
+        /(contact|despre|termeni|condi[tț]ii)/i.test(l.text)
+    );
+
+    for (const link of detailLinks) {
+        try {
+            await page.goto(link.href, { waitUntil: "domcontentloaded", timeout: 30000 });
+            await extractCUI();
+        } catch (err) {
+            logger.warn(`Could not load CUI page: ${link.href}`);
+        }
+    }
+
+    return Array.from(cuis);
 }
