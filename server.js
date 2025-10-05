@@ -13,9 +13,8 @@ const PORT = process.env.PORT;
 
 const blacklist = [
     "onrc.ro", "gov.ro", "anaf.ro", "facebook.com", "instagram.com", "linkedin.com",
-    "douglas.ro", "marionnaud.ro", "yves-rocher.ro", "sabon.ro", "sephora.ro",
-    "pupamilano.ro", "maccosmetics.ro", "xpertbeauty.ro", "notino.ro", "makeup.ro",
-    "elefant.ro", "emag.ro", "aboutyou.ro", "avon.ro", "farmec.ro", "gerovital.ro"
+    "douglas.ro", "sephora.ro", "notino.ro", "makeup.ro", "elefant.ro", "emag.ro",
+	"aboutyou.ro", "avon.ro", "farmec.ro", "gerovital.ro"
 ];
 
 function isBlacklisted(url) {
