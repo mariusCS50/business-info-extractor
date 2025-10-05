@@ -13,7 +13,8 @@ export async function getCluster() {
             maxConcurrency: 3,
             puppeteerOptions: {
                 headless: true,
-                args: ["--no-sandbox", "--disable-setuid-sandbox"],
+
+                args: ["--no-sandbox", "--disable-setuid-sandbox", '--disable-http2'],
             },
             timeout: 120 * 1000,
             // retryLimit: 2,
