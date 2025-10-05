@@ -8,7 +8,13 @@ export async function crawlWebsites(urls) {
     const cluster = await getCluster();
 
     await cluster.task(async ({ page, data: url }) => {
+
+		await page.setUserAgent(
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
+		);
+
         logger.info(`Starting crawl: ${url}`);
+
         try {
             const emails = await getEmails(page, url);
             const phones = await getPhones(page, url);

@@ -12,7 +12,7 @@ export async function getCluster() {
             concurrency: Cluster.CONCURRENCY_PAGE,
             maxConcurrency: 3,
             puppeteerOptions: {
-                headless: false,
+                headless: true,
                 args: ["--no-sandbox", "--disable-setuid-sandbox"],
             },
             timeout: 60 * 1000,
