@@ -45,7 +45,7 @@ app.get("/search", async (req, res) => {
 
         const urls = organic.map((item) => item.url);
 
-		urls.filter((url) => {
+		const filteredUrls = urls.filter((url) => {
             if (isBlacklisted(url)) {
                 logger.info(`Skipping blacklisted: ${url}`);
                 return false;
@@ -53,7 +53,7 @@ app.get("/search", async (req, res) => {
             return true;
         });
 
-        if (urls.length === 0) {
+        if (filteredUrls.length === 0) {
             return res.status(204).json({
                 success: true,
                 query: q,
@@ -61,7 +61,7 @@ app.get("/search", async (req, res) => {
             });
         }
 
-        const extractedData = await crawlWebsites(urls);
+        const extractedData = await crawlWebsites(filteredUrls);
 
         return res.json({
             success: true,
