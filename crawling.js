@@ -1,5 +1,5 @@
 import { getCluster } from "./clusterManager.js";
-import { getEmails, getPhones, getCompanyName, getCUI } from "./extractors.js";
+import { crawlPages } from "./extractors.js";
 import { Logger } from "./logger.js";
 
 const logger = new Logger("Crawler");
@@ -16,13 +16,10 @@ export async function crawlWebsites(urls) {
         logger.info(`Starting crawl: ${url}`);
 
         try {
-            const emails = await getEmails(page, url);
-            const phones = await getPhones(page, url);
-            const company = await getCompanyName(page, url);
-            const cui = await getCUI(page, url);
+            const result = await crawlPages(page, url);
 
             logger.info(`Finished crawl: ${url}`);
-            return { url, emails, phones, company, cui };
+            return result;
         } catch (err) {
             logger.error(`Error crawling ${url}: ${err.message}`);
             return { url, error: err.message };
