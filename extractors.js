@@ -21,7 +21,7 @@ export async function crawlPages(page, url) {
 		}))
 	);
 
-	const contactLinks = links.filter((l) => /(contact|despre)/i.test(l.text));
+	const contactLinks = links.filter((l) => /(contact|despre|faq)/i.test(l.text));
 
 	for (const link of contactLinks) {
 		try {
@@ -95,7 +95,7 @@ async function getPhones(phones, text) {
 async function getCompanyName(companies, text) {
 	const matches =
 		text.match(
-			/\b(?:[A-ZĂÂÎȘȚ][A-Za-zĂÂÎȘȚăâîșț0-9&.,\-]{1,40}\s+){0,5}(?:SRL|SA)\b/g
+			/\b(?:[A-ZĂÂÎȘȚ][A-Za-zĂÂÎȘȚăâîșț0-9&.,\-]{1,40}\s+){0,5}(?:S\.?\s?A\.?|S\.?\s?R\.?\s?L\.?|S\.?\s?p\.?\s?A\.?)\b/g
 		) || [];
 
 	matches.forEach((raw) => {
@@ -107,13 +107,13 @@ async function getCompanyName(companies, text) {
 async function getCUI(cuis, text) {
 	const matches =
 		text.match(
-			/\b(?:RO\s*[-–—.:/\\]?\s*\d{6,10}|cod\s+unic(?:\s+\w+){0,4}?\s*[:\-]?\s*(?:RO\s*)?\d{6,10})\b/gi
+			/\b(?:RO\s*[-–—.:\/\\]?\s*\d{6,12}|cod\s+(?:unic|fiscal)(?:\s+\w+(?:[.,])?){0,4}?\s*[:\-.,]?\s*(?:RO\s*)?\d{6,12})\b/gi
 		) || [];
 
 	matches.forEach((raw) => {
 		const digits = raw.replace(/[^0-9]/g, "");
 		if (digits.length >= 6 && digits.length <= 10) {
-			cuis.add(`RO${digits}`);
+			cuis.add(raw);
 		}
 	});
 }
