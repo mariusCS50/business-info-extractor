@@ -1,4 +1,6 @@
+import fs from "fs";
 import { Logger } from "./logger.js";
+import { log } from "console";
 
 const logger = new Logger("Extractors");
 
@@ -15,13 +17,18 @@ export async function crawlPages(page, url) {
 	await getPhones(phones, text);
 
 	const links = await page.$$eval("a", (anchors) =>
-		anchors.map((a) => ({
+		anchors.map(a => ({
 			href: a.href,
 			text: (a.innerText || "").trim().toLowerCase(),
 		}))
 	);
 
-	const contactLinks = links.filter((l) => /(contact|despre|faq)/i.test(l.text));
+	const uniqueLinks = links.filter(
+		(link, index, self) =>
+			index === self.findIndex(l => l.href === link.href)
+		);
+
+	const contactLinks = uniqueLinks.filter((l) => /(contact|despre|faq)/i.test(l.text));
 
 	for (const link of contactLinks) {
 		try {
@@ -37,12 +44,12 @@ export async function crawlPages(page, url) {
 		}
 	}
 
-	const legalLinks = links.filter((l) => /(termeni|condi[tț]ii)/i.test(l.text));
+	const legalLinks = uniqueLinks.filter((l) => /(termeni|condi[tț]ii)/i.test(l.text));
 
 	for (const link of legalLinks) {
 		try {
 			await page.goto(link.href, { waitUntil: "networkidle2", timeout: 60000 });
-			const text = await page.evaluate(() => (document.body.textContent || '').replace(/\s+/g, ' '));
+			const text = await page.evaluate(() => document.body.innerText);
 
 			await getCompanyName(companies, text);
 			await getCUI(cuis, text);
